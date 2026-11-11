@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=61", "wheel", "pybind11>=2.10"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nvjpeg-bridge"
+dynamic = ["version"]
+description = "Decode JPEGs straight into CUDA memory: Jetson NVJPG/VIC (JetPack 5-7), CUDA nvJPEG (CUDA 11-13), with zero-copy DLPack / CUDA Array Interface export."
+readme = "README.md"
+requires-python = ">=3.8"
+# License: MIT (see LICENSE, which setuptools includes automatically). `license` is not set here
+# because the table form is deprecated and the SPDX string form needs setuptools>=77, which no
+# longer runs on Python 3.8 (JetPack 5).
+keywords = ["jpeg", "cuda", "nvjpeg", "jetson", "jetson-thor", "jetson-orin", "jetpack", "nvjpg", "dlpack", "pytorch", "zero-copy"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Environment :: GPU :: NVIDIA CUDA",
+    "Topic :: Multimedia :: Graphics",
+]
+# torch is intentionally not a hard dependency: Jetson needs NVIDIA's own wheels.
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=7", "numpy", "pillow"]
+
+[dependency-groups]
+# Installed by default with `uv sync`; used by `uv run pytest`.
+dev = ["pytest>=7", "numpy", "pillow", "simplejpeg", "setuptools>=61", "pybind11>=2.10"]
+
+[project.scripts]
+nvjpeg-bridge-info = "nvjpeg_bridge._env:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = { attr = "nvjpeg_bridge._version.__version__" }
+
+[tool.uv]
+# uv caches the built wheel of this project. Rebuild it whenever the C++/Python
+# sources or any build-affecting environment variable changes; otherwise
+# `uv sync` could keep a stale build (e.g. one made before CUDA was found).
+cache-keys = [
+    { file = "pyproject.toml" },
+    { file = "setup.py" },
+    { file = "csrc/**/*" },
+    { file = "src/**/*.py" },
+    { env = "NVJPEG_BRIDGE_BACKENDS" },
+    { env = "NVJPEG_BRIDGE_FORCE_JETSON" },
+    { env = "CUDA_HOME" },
+    { env = "CUDA_PATH" },
+    { env = "NVJPEG_HOME" },
+    { env = "JETSON_MMAPI" },
+    { env = "TEGRA_LIB_DIR" },
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

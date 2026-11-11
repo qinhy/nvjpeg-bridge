@@ -1,0 +1,5 @@
+include README.md LICENSE pyproject.toml setup.py uv.lock
+recursive-include csrc *.cpp *.hpp *.h
+recursive-include tests *.py
+recursive-include examples *.py
+recursive-include scripts *.sh
